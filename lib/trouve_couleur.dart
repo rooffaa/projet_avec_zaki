@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'trouve_animal.dart';
 
 class TrouveCouleur extends StatefulWidget {
   const TrouveCouleur({super.key});
@@ -11,6 +12,7 @@ class TrouveCouleur extends StatefulWidget {
 class _TrouveCouleurState extends State<TrouveCouleur> {
   final Random random = Random();
 
+  // Liste des couleurs
   final List<Map<String, dynamic>> couleurs = [
     {
       'nom': 'Rouge',
@@ -42,6 +44,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
     nouveauJeu();
   }
 
+  // Préparer une nouvelle question
   void nouveauJeu() {
     couleurDemandee = couleurs[random.nextInt(couleurs.length)];
 
@@ -51,24 +54,67 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
     setState(() {});
   }
 
-  void verifierReponse(Map<String, dynamic> choixUtilisateur) {
-    if (choixUtilisateur['nom'] == couleurDemandee['nom']) {
+  // Vérifier la réponse
+  void verifierReponse(
+      Map<String, dynamic> choixUtilisateur) {
+
+    // Bonne réponse
+    if (choixUtilisateur['nom'] ==
+        couleurDemandee['nom']) {
+
       setState(() {
         score++;
         niveau++;
       });
 
+      // Si le score atteint 10
+      if (score >= 10) {
+
+        afficherMessage(
+          'Bravo ! Jeu suivant 🎉',
+          Colors.green,
+        );
+
+        // Attendre un peu avant de changer de jeu
+        Future.delayed(
+          const Duration(milliseconds: 1000),
+          () {
+            if (mounted) {
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const TrouveAnimal(),
+                ),
+              );
+
+            }
+          },
+        );
+
+        return;
+      }
+
+      // Message de bonne réponse
       afficherMessage(
         'Bravo ! 🎉',
         Colors.green,
       );
 
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) {
-          nouveauJeu();
-        }
-      });
+      // Nouvelle question
+      Future.delayed(
+        const Duration(milliseconds: 800),
+        () {
+          if (mounted) {
+            nouveauJeu();
+          }
+        },
+      );
+
     } else {
+
+      // Mauvaise réponse
       afficherMessage(
         'Essaie encore 😊',
         Colors.orange,
@@ -76,8 +122,13 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
     }
   }
 
-  void afficherMessage(String message, Color couleur) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  // Afficher un message
+  void afficherMessage(
+      String message,
+      Color couleur) {
+
+    ScaffoldMessenger.of(context)
+        .hideCurrentSnackBar();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -90,16 +141,21 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
           ),
         ),
         backgroundColor: couleur,
-        duration: const Duration(milliseconds: 700),
+        duration: const Duration(
+          milliseconds: 700,
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFEAF6FF),
 
+    return Scaffold(
+      backgroundColor:
+          const Color(0xFFEAF6FF),
+
+      // Barre supérieure
       appBar: AppBar(
         title: const Text(
           'Trouve la couleur',
@@ -118,10 +174,13 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
           child: Column(
             children: [
 
-              // Score
+              // SCORE ET NIVEAU
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+
                 children: [
+
                   Text(
                     'Niveau : $niveau',
                     style: const TextStyle(
@@ -131,7 +190,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                   ),
 
                   Text(
-                    '⭐ $score',
+                    '⭐ $score / 10',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -142,10 +201,11 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
               const SizedBox(height: 30),
 
-              // Question
+              // QUESTION
               const Text(
                 'Trouve la couleur :',
                 textAlign: TextAlign.center,
+
                 style: TextStyle(
                   fontSize: 27,
                   fontWeight: FontWeight.bold,
@@ -154,9 +214,10 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
               const SizedBox(height: 15),
 
-              // Nom de la couleur
+              // NOM DE LA COULEUR
               Text(
                 couleurDemandee['nom'],
+
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -166,7 +227,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
               const SizedBox(height: 35),
 
-              // Boutons
+              // BOUTONS DES COULEURS
               Expanded(
                 child: GridView.builder(
                   itemCount: choix.length,
@@ -178,24 +239,40 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                     mainAxisSpacing: 20,
                   ),
 
-                  itemBuilder: (context, index) {
-                    final choixCouleur = choix[index];
+                  itemBuilder:
+                      (context, index) {
+
+                    final choixCouleur =
+                        choix[index];
 
                     return GestureDetector(
                       onTap: () {
-                        verifierReponse(choixCouleur);
+
+                        verifierReponse(
+                          choixCouleur,
+                        );
+
                       },
 
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: choixCouleur['couleur'],
-                          borderRadius: BorderRadius.circular(25),
+                        decoration:
+                            BoxDecoration(
+
+                          color:
+                              choixCouleur['couleur'],
+
+                          borderRadius:
+                              BorderRadius.circular(
+                            25,
+                          ),
 
                           boxShadow: const [
                             BoxShadow(
                               blurRadius: 5,
-                              offset: Offset(0, 4),
-                              color: Colors.black26,
+                              offset:
+                                  Offset(0, 4),
+                              color:
+                                  Colors.black26,
                             ),
                           ],
                         ),
@@ -203,10 +280,14 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                         child: Center(
                           child: Text(
                             choixCouleur['nom'],
-                            style: const TextStyle(
+
+                            style:
+                                const TextStyle(
                               fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              fontWeight:
+                                  FontWeight.bold,
+                              color:
+                                  Colors.white,
                             ),
                           ),
                         ),
@@ -218,9 +299,10 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
               const SizedBox(height: 15),
 
-              // Bouton recommencer
+              // BOUTON RECOMMENCER
               ElevatedButton.icon(
                 onPressed: () {
+
                   setState(() {
                     score = 0;
                     niveau = 1;
@@ -229,15 +311,21 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                   nouveauJeu();
                 },
 
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(
+                  Icons.refresh,
+                ),
 
                 label: const Text(
                   'Recommencer',
-                  style: TextStyle(fontSize: 18),
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
                 ),
 
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
+                style:
+                    ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(
                     horizontal: 30,
                     vertical: 14,
                   ),
