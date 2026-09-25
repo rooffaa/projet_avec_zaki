@@ -225,7 +225,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                 ),
               ),
 
-              const SizedBox(height: 35),
+              const SizedBox(height: 15),
 
               // BOUTONS DES COULEURS
               Expanded(
@@ -234,7 +234,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
                   gridDelegate:
                       const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                    crossAxisCount: 4,
                     crossAxisSpacing: 20,
                     mainAxisSpacing: 20,
                   ),
@@ -278,7 +278,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                         ),
 
                         child: Center(
-                          child: Text(
+                          /*child: Text(
                             choixCouleur['nom'],
 
                             style:
@@ -289,7 +289,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                               color:
                                   Colors.white,
                             ),
-                          ),
+                          ),*/
                         ),
                       ),
                     );
