@@ -3,68 +3,102 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'trouve_animal.dart';
 
-class TrouveCouleur extends StatefulWidget {
-  const TrouveCouleur({super.key});
+class Alphabet extends StatefulWidget {
+  const Alphabet({super.key});
 
   @override
-  State<TrouveCouleur> createState() => _TrouveCouleurState();
+  State<Alphabet> createState() => _AlphabetState();
 }
 
-class _TrouveCouleurState extends State<TrouveCouleur> {
+class _AlphabetState extends State<Alphabet> {
   final Random random = Random();
 
-  final List<Map<String, dynamic>> couleurs = [
-    {
-      'nom': 'أحمر',
-      'couleur': Colors.red,
-    },
-    {
-      'nom': 'أزرق',
-      'couleur': Colors.blue,
-    },
-    {
-      'nom': 'أخضر',
-      'couleur': Colors.green,
-    },
-    {
-      'nom': 'أصفر',
-      'couleur': Colors.yellow,
-    },
+  final List<Map<String, String>> lettres = [
+    {'nom': 'أ', 'nom1': 'أ'},
+    {'nom': 'ب', 'nom1': 'ب'},
+    {'nom': 'ت', 'nom1': 'ت'},
+    {'nom': 'ث', 'nom1': 'ث'},
   ];
 
-  late Map<String, dynamic> couleurDemandee;
-  late List<Map<String, dynamic>> choix;
+  final List<Color> couleursCartes = [
+    const Color(0xFF64B5F6),
+    const Color(0xFF9575CD),
+    const Color(0xFFFF8A80),
+    const Color(0xFF66BB6A),
+  ];
+
+  late Map<String, String> alphabetDemandee;
+  late List<Map<String, String>> choix;
 
   int score = 0;
   int niveau = 1;
 
   bool reponseEnCours = false;
+  bool afficherCartes = true;
+
+  Timer? timerCartes;
+  Timer? timerQuestion;
 
   @override
   void initState() {
     super.initState();
     preparerQuestion();
+    demarrerTimerCartes();
   }
 
+  // Préparer une nouvelle question
   void preparerQuestion() {
-    couleurDemandee = couleurs[random.nextInt(couleurs.length)];
+    alphabetDemandee = lettres[random.nextInt(lettres.length)];
 
-    choix = List<Map<String, dynamic>>.from(couleurs);
+    choix = List<Map<String, String>>.from(lettres);
     choix.shuffle();
   }
 
-  void nouveauJeu() {
+  // Afficher les cartes pendant 5 secondes
+  void demarrerTimerCartes() {
+    timerCartes?.cancel();
+
+    if (!mounted) return;
+
     setState(() {
-      preparerQuestion();
-      reponseEnCours = false;
+      afficherCartes = true;
+    });
+
+    timerCartes = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+
+      setState(() {
+        afficherCartes = false;
+      });
     });
   }
 
-  void verifierReponse(Map<String, dynamic> choixUtilisateur) {
-    if (reponseEnCours) return;
+  // Recommencer le jeu
+  void nouveauJeu() {
+    timerCartes?.cancel();
+    timerQuestion?.cancel();
 
-    if (choixUtilisateur['nom'] == couleurDemandee['nom']) {
+    setState(() {
+      score = 0;
+      niveau = 1;
+      reponseEnCours = false;
+      preparerQuestion();
+      afficherCartes = true;
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    demarrerTimerCartes();
+  }
+
+  // Vérifier la réponse de l'enfant
+  void verifierReponse(Map<String, String> choixUtilisateur) {
+    if (afficherCartes || reponseEnCours) return;
+
+    if (choixUtilisateur['nom'] == alphabetDemandee['nom']) {
       reponseEnCours = true;
+
+      timerCartes?.cancel();
 
       setState(() {
         score++;
@@ -73,34 +107,46 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
       if (score >= 10) {
         afficherMessage(
-          'أحسنت! اللعبة التالية 🎉',
+          'أحسنت! لقد أكملت اللعبة 🎉',
           const Color(0xFF43A047),
         );
 
-        Future.delayed(const Duration(milliseconds: 1200), () {
-          if (!mounted) return;
+        timerQuestion = Timer(
+          const Duration(milliseconds: 1200),
+          () {
+            if (!mounted) return;
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const TrouveAnimal(),
-            ),
-          );
-        });
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const TrouveAnimal(),
+              ),
+            );
+          },
+        );
 
         return;
       }
 
       afficherMessage(
-        'ممتاز! 🎉',
+        'ممتاز! إجابة صحيحة 🎉',
         const Color(0xFF43A047),
       );
 
-      Future.delayed(const Duration(milliseconds: 900), () {
-        if (mounted) {
-          nouveauJeu();
-        }
-      });
+      timerQuestion = Timer(
+        const Duration(milliseconds: 900),
+        () {
+          if (!mounted) return;
+
+          setState(() {
+            preparerQuestion();
+            reponseEnCours = false;
+            afficherCartes = true;
+          });
+
+          demarrerTimerCartes();
+        },
+      );
     } else {
       afficherMessage(
         'حاول مرة أخرى 😊',
@@ -109,6 +155,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
     }
   }
 
+  // Afficher un message
   void afficherMessage(String message, Color couleur) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
@@ -133,6 +180,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
     );
   }
 
+  // Carte d'information : score ou niveau
   Widget carteInformation({
     required IconData icon,
     required String titre,
@@ -143,10 +191,10 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: 15,
+          vertical: 14,
         ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.94),
+          color: Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
@@ -158,11 +206,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: couleur,
-              size: 30,
-            ),
+            Icon(icon, color: couleur, size: 28),
             const SizedBox(height: 5),
             Text(
               titre,
@@ -188,16 +232,23 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
   }
 
   @override
+  void dispose() {
+    timerCartes?.cancel();
+    timerQuestion?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF8ED8F8),
 
       appBar: AppBar(
         title: const Text(
-          'لعبة الألوان 🌈',
+          'لعبة الحروف العربية 🔤',
           style: TextStyle(
             fontWeight: FontWeight.w900,
-            fontSize: 23,
+            fontSize: 21,
             color: Colors.white,
           ),
         ),
@@ -222,7 +273,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
         child: Stack(
           children: [
-            // Décorations de fond
             const Positioned(
               top: 20,
               left: 20,
@@ -233,11 +283,11 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
             ),
 
             const Positioned(
-              top: 100,
+              top: 90,
               right: 15,
               child: Text(
                 '☁️',
-                style: TextStyle(fontSize: 50),
+                style: TextStyle(fontSize: 45),
               ),
             ),
 
@@ -252,7 +302,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(16),
 
                 child: Column(
                   children: [
@@ -277,17 +327,17 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                       ],
                     ),
 
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 22),
 
                     // QUESTION
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        vertical: 22,
-                        horizontal: 15,
+                        vertical: 18,
+                        horizontal: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.95),
+                        color: Colors.white.withValues(alpha: 0.96),
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: const [
                           BoxShadow(
@@ -301,53 +351,64 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                       child: Column(
                         children: [
                           const Text(
-                            '🎨',
-                            style: TextStyle(fontSize: 45),
+                            '🔤',
+                            style: TextStyle(fontSize: 42),
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
 
                           const Text(
-                            'أنقر على هذا اللون',
+                            'تذكّر الحروف ثم اختر الحرف الصحيح',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 25,
+                              fontSize: 21,
                               fontWeight: FontWeight.w900,
                               color: Color(0xFF514477),
                             ),
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
 
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 25,
-                              vertical: 10,
+                              horizontal: 30,
+                              vertical: 8,
                             ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF3F0FF),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              couleurDemandee['nom'],
+                              alphabetDemandee['nom1']!,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 35,
+                              style: const TextStyle(
+                                fontSize: 50,
                                 fontWeight: FontWeight.w900,
-                                color: couleurDemandee['couleur'] ==
-                                        Colors.yellow
-                                    ? const Color(0xFFB88600)
-                                    : couleurDemandee['couleur'],
+                                color: Color(0xFF7E57C2),
                               ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Text(
+                            afficherCartes
+                                ? '👀 احفظ أماكن الحروف! (5 ثوانٍ)'
+                                : '🧠 أين يوجد هذا الحرف؟',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF765A9E),
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 20),
 
-                    // CHOIX DES COULEURS
+                    // CARTES DES LETTRES
                     Expanded(
                       child: GridView.builder(
                         itemCount: choix.length,
@@ -356,50 +417,63 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          childAspectRatio: 1.75,
+                          crossAxisSpacing: 30,
+                          mainAxisSpacing: 30,
+                          childAspectRatio: 0.85,
                         ),
 
                         itemBuilder: (context, index) {
-                          final choixCouleur = choix[index];
-
-                          final Color couleur =
-                              choixCouleur['couleur'];
+                          final choixLettre = choix[index];
+                          final couleur = couleursCartes[index];
 
                           return GestureDetector(
                             onTap: () {
-                              verifierReponse(choixCouleur);
+                              if (!afficherCartes) {
+                                verifierReponse(choixLettre);
+                              }
                             },
 
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
+                              duration: const Duration(milliseconds: 300),
+
                               decoration: BoxDecoration(
-                                color: couleur,
-                                borderRadius: BorderRadius.circular(30),
+                                color: afficherCartes
+                                    ? couleur
+                                    : Colors.white.withValues(alpha: 0.95),
+
+                                borderRadius: BorderRadius.circular(22),
+
                                 border: Border.all(
                                   color: Colors.white,
-                                  width: 5,
+                                  width: 3,
                                 ),
+
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(
-                                      alpha: 0.20,
+                                      alpha: 0.18,
                                     ),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 6),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
 
                               child: Center(
-                                child: Icon(
-                                  Icons.star_rounded,
-                                  size: 48,
-                                  color: couleur == Colors.yellow
-                                      ? const Color(0xFFFFB300)
-                                      : Colors.white.withValues(alpha: 0.8),
-                                ),
+                                child: afficherCartes
+                                    ? Text(
+                                        choixLettre['nom1']!,
+                                        style: const TextStyle(
+                                          fontSize: 34,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.help_rounded,
+                                        size: 35,
+                                        color: Color(0xFF9575CD),
+                                      ),
                               ),
                             ),
                           );
@@ -407,23 +481,14 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                       ),
                     ),
 
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 12),
 
                     // BOUTON RECOMMENCER
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            score = 0;
-                            niveau = 1;
-                            preparerQuestion();
-                            reponseEnCours = false;
-                          });
 
-                          ScaffoldMessenger.of(context)
-                              .hideCurrentSnackBar();
-                        },
+                      child: ElevatedButton.icon(
+                        onPressed: nouveauJeu,
 
                         icon: const Icon(
                           Icons.refresh_rounded,
@@ -442,9 +507,11 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                           backgroundColor: const Color(0xFFFFD166),
                           foregroundColor: const Color(0xFF654900),
                           elevation: 5,
+
                           padding: const EdgeInsets.symmetric(
-                            vertical: 16,
+                            vertical: 14,
                           ),
+
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),

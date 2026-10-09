@@ -1118,7 +1118,7 @@ class _ChoisirAnimalState extends State<ChoisirAnimal> {
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:autisme/trouve_couleur.dart';
+import 'Alphabet.dart';
 
 class ChoisirAnimal extends StatefulWidget {
   const ChoisirAnimal({super.key});
@@ -1353,7 +1353,7 @@ class _ChoisirAnimalState extends State<ChoisirAnimal> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => const TrouveCouleur(),
+                builder: (context) => const Alphabet(),
               ),
             );
           },
