@@ -1,33 +1,13 @@
-/*import 'package:flutter/material.dart';
-import 'trouve_couleur.dart';
-
-void main() {
-  runApp(const MonApplication());
-}
-
-class MonApplication extends StatelessWidget {
-  const MonApplication({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Jeux pour enfants',
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Arial',
-      ),
-      home: const TrouveCouleur(),
-    );
-  }
-}*/
-
 
 import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'trouve_couleur.dart';
+import 'music_service.dart';
+//import 'trouve_couleur.dart';
+import 'gauche_droite.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MonApplication());
 }
 
@@ -57,13 +37,17 @@ class EcranAccueil extends StatefulWidget {
 
 class _EcranAccueilState extends State<EcranAccueil>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _animation;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+
+    // Démarre la musique dès le premier écran.
+    // Le service unique évite de relancer la musique à chaque page.
+    MusicService.instance.demarrer();
 
     _controller = AnimationController(
       vsync: this,
@@ -77,13 +61,14 @@ class _EcranAccueilState extends State<EcranAccueil>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 5), () {
+    _timer = Timer(const Duration(seconds: 5), () {
       if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const TrouveCouleur(),
+          //builder: (context) => const TrouveCouleur(),
+          builder: (context) => const GaucheDroite(),
         ),
       );
     });
@@ -91,7 +76,11 @@ class _EcranAccueilState extends State<EcranAccueil>
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
+
+    // Ne pas arrêter la musique ici :
+    // elle doit continuer dans les autres jeux.
     super.dispose();
   }
 
@@ -101,7 +90,6 @@ class _EcranAccueilState extends State<EcranAccueil>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -113,7 +101,6 @@ class _EcranAccueilState extends State<EcranAccueil>
             ],
           ),
         ),
-
         child: Center(
           child: FadeTransition(
             opacity: _animation,
@@ -122,14 +109,11 @@ class _EcranAccueilState extends State<EcranAccueil>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   const Text(
                     '🌈',
                     style: TextStyle(fontSize: 85),
                   ),
-
                   const SizedBox(height: 25),
-
                   const Text(
                     'ألعاب ممتعة',
                     textAlign: TextAlign.center,
@@ -146,9 +130,7 @@ class _EcranAccueilState extends State<EcranAccueil>
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
                   const Text(
                     'للصغار',
                     textAlign: TextAlign.center,
@@ -166,16 +148,12 @@ class _EcranAccueilState extends State<EcranAccueil>
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
                   const Text(
                     '⭐  🎨  🧩  🦁',
                     style: TextStyle(fontSize: 35),
                   ),
-
                   const SizedBox(height: 35),
-
                   const Text(
                     'إستعدوا للعب !',
                     style: TextStyle(
@@ -184,9 +162,7 @@ class _EcranAccueilState extends State<EcranAccueil>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
                   const SizedBox(
                     width: 35,
                     height: 35,

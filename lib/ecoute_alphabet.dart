@@ -1,17 +1,19 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'trouve_animal.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'dart:math';
 
-class Alphabet extends StatefulWidget {
-  const Alphabet({super.key});
+import 'fruits_lrgumes.dart';
+
+class AlphabetAudio extends StatefulWidget {
+  const AlphabetAudio({super.key});
 
   @override
-  State<Alphabet> createState() => _AlphabetState();
+  State<AlphabetAudio> createState() => _AlphabetAudioState();
 }
 
-class _AlphabetState extends State<Alphabet> {
+class _AlphabetAudioState extends State<AlphabetAudio> {
   final Random random = Random();
+  final FlutterTts flutterTts = FlutterTts();
 
   final List<Map<String, String>> lettres = [
     {'nom': 'أ', 'nom1': 'أ'},
@@ -27,78 +29,66 @@ class _AlphabetState extends State<Alphabet> {
     const Color(0xFF66BB6A),
   ];
 
-  late Map<String, String> alphabetDemandee;
+  late Map<String, String> lettreDemandee;
   late List<Map<String, String>> choix;
 
   int score = 0;
   int niveau = 1;
 
   bool reponseEnCours = false;
-  bool afficherCartes = true;
-
-  Timer? timerCartes;
-  Timer? timerQuestion;
+  bool lectureEnCours = false;
 
   @override
   void initState() {
     super.initState();
     preparerQuestion();
-    demarrerTimerCartes();
+    configurerAudio();
   }
 
-  // Préparer une nouvelle question
+  // Configuration de la voix arabe
+  Future<void> configurerAudio() async {
+    await flutterTts.setLanguage('ar-SA');
+    await flutterTts.setSpeechRate(0.35);
+    await flutterTts.setPitch(1.0);
+    await flutterTts.awaitSpeakCompletion(true);
+  }
+
+  // Choisir une lettre au hasard
   void preparerQuestion() {
-    alphabetDemandee = lettres[random.nextInt(lettres.length)];
+    lettreDemandee = lettres[random.nextInt(lettres.length)];
 
     choix = List<Map<String, String>>.from(lettres);
     choix.shuffle();
   }
 
-  // Afficher les cartes pendant 5 secondes
-  void demarrerTimerCartes() {
-    timerCartes?.cancel();
-
-    if (!mounted) return;
+  // Lire le son de la lettre demandée
+  Future<void> ecouterLettre() async {
+    if (lectureEnCours) return;
 
     setState(() {
-      afficherCartes = true;
+      lectureEnCours = true;
     });
 
-    timerCartes = Timer(const Duration(seconds: 3), () {
-      if (!mounted) return;
-
-      setState(() {
-        afficherCartes = false;
-      });
-    });
+    try {
+      await flutterTts.stop();
+      await flutterTts.speak(lettreDemandee['nom1']!);
+    } catch (e) {
+      debugPrint('Erreur audio : $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          lectureEnCours = false;
+        });
+      }
+    }
   }
 
-  // Recommencer le jeu
-  void nouveauJeu() {
-    timerCartes?.cancel();
-    timerQuestion?.cancel();
-
-    setState(() {
-      score = 0;
-      niveau = 1;
-      reponseEnCours = false;
-      preparerQuestion();
-      afficherCartes = true;
-    });
-
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    demarrerTimerCartes();
-  }
-
-  // Vérifier la réponse de l'enfant
+  // Vérifier la réponse
   void verifierReponse(Map<String, String> choixUtilisateur) {
-    if (afficherCartes || reponseEnCours) return;
+    if (reponseEnCours) return;
 
-    if (choixUtilisateur['nom'] == alphabetDemandee['nom']) {
+    if (choixUtilisateur['nom'] == lettreDemandee['nom']) {
       reponseEnCours = true;
-
-      timerCartes?.cancel();
 
       setState(() {
         score++;
@@ -111,19 +101,16 @@ class _AlphabetState extends State<Alphabet> {
           const Color(0xFF43A047),
         );
 
-        timerQuestion = Timer(
-          const Duration(milliseconds: 1200),
-          () {
-            if (!mounted) return;
+        Future.delayed(const Duration(milliseconds: 1200), () {
+          if (!mounted) return;
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const TrouveAnimal(),
-              ),
-            );
-          },
-        );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FruitsLrgumes(),
+            ),
+          );
+        });
 
         return;
       }
@@ -133,20 +120,14 @@ class _AlphabetState extends State<Alphabet> {
         const Color(0xFF43A047),
       );
 
-      timerQuestion = Timer(
-        const Duration(milliseconds: 900),
-        () {
-          if (!mounted) return;
+      Future.delayed(const Duration(milliseconds: 900), () {
+        if (!mounted) return;
 
-          setState(() {
-            preparerQuestion();
-            reponseEnCours = false;
-            afficherCartes = true;
-          });
-
-          demarrerTimerCartes();
-        },
-      );
+        setState(() {
+          preparerQuestion();
+          reponseEnCours = false;
+        });
+      });
     } else {
       afficherMessage(
         'حاول مرة أخرى 😊',
@@ -180,7 +161,7 @@ class _AlphabetState extends State<Alphabet> {
     );
   }
 
-  // Carte d'information : score ou niveau
+  // Carte du score et du niveau
   Widget carteInformation({
     required IconData icon,
     required String titre,
@@ -231,10 +212,26 @@ class _AlphabetState extends State<Alphabet> {
     );
   }
 
+  // Recommencer le jeu
+  Future<void> nouveauJeu() async {
+    await flutterTts.stop();
+
+    if (!mounted) return;
+
+    setState(() {
+      score = 0;
+      niveau = 1;
+      reponseEnCours = false;
+      lectureEnCours = false;
+      preparerQuestion();
+    });
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
+
   @override
   void dispose() {
-    timerCartes?.cancel();
-    timerQuestion?.cancel();
+    flutterTts.stop();
     super.dispose();
   }
 
@@ -245,7 +242,7 @@ class _AlphabetState extends State<Alphabet> {
 
       appBar: AppBar(
         title: const Text(
-          'لعبة الحروف العربية 🔤',
+          'لعبة الحروف بالصوت 🔊',
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 21,
@@ -327,13 +324,13 @@ class _AlphabetState extends State<Alphabet> {
                       ],
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 25),
 
-                    // QUESTION
+                    // QUESTION AUDIO
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        vertical: 18,
+                        vertical: 24,
                         horizontal: 12,
                       ),
                       decoration: BoxDecoration(
@@ -350,54 +347,62 @@ class _AlphabetState extends State<Alphabet> {
 
                       child: Column(
                         children: [
-                          const Text(
-                            '🔤',
-                            style: TextStyle(fontSize: 42),
+/*                          const Text(
+                            '👂',
+                            style: TextStyle(fontSize: 45),
                           ),
 
-                          const SizedBox(height: 6),
-
+                          const SizedBox(height: 10),
+*/
                           const Text(
-                            'تذكّر الحروف ثم اختر الحرف الصحيح',
+                            'استمع إلى الحرف واختره',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 21,
+                              fontSize: 23,
                               fontWeight: FontWeight.w900,
                               color: Color(0xFF514477),
                             ),
                           ),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 20),
 
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 30,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF3F0FF),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              alphabetDemandee['nom1']!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 50,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF7E57C2),
+                          // BOUTON POUR ÉCOUTER
+                          SizedBox(
+                            width: 130,
+                            height: 100,
+                            child: ElevatedButton(
+                              onPressed: lectureEnCours
+                                  ? null
+                                  : ecouterLettre,
+
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color(0xFFFFD166),
+                                foregroundColor:
+                                    const Color(0xFF654900),
+                                elevation: 6,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(28),
+                                ),
+                              ),
+
+                              child: Icon(
+                                lectureEnCours
+                                    ? Icons.volume_up_rounded
+                                    : Icons.play_circle_fill_rounded,
+                                size: 65,
                               ),
                             ),
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
 
-                          Text(
-                            afficherCartes
-                                ? '👀 احفظ أماكن الحروف! (5 ثوانٍ)'
-                                : '🧠 أين يوجد هذا الحرف؟',
+                          const Text(
+                            'اضغط على الزر للاستماع مرة أخرى 🔊',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF765A9E),
                             ),
@@ -406,9 +411,9 @@ class _AlphabetState extends State<Alphabet> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 25),
 
-                    // CARTES DES LETTRES
+                    // CARTES DES LETTRES : TOUJOURS VISIBLES
                     Expanded(
                       child: GridView.builder(
                         itemCount: choix.length,
@@ -417,8 +422,8 @@ class _AlphabetState extends State<Alphabet> {
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
-                          crossAxisSpacing: 30,
-                          mainAxisSpacing: 30,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
                           childAspectRatio: 0.85,
                         ),
 
@@ -428,26 +433,21 @@ class _AlphabetState extends State<Alphabet> {
 
                           return GestureDetector(
                             onTap: () {
-                              if (!afficherCartes) {
-                                verifierReponse(choixLettre);
-                              }
+                              verifierReponse(choixLettre);
                             },
 
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
+                              duration:
+                                  const Duration(milliseconds: 200),
 
                               decoration: BoxDecoration(
-                                color: afficherCartes
-                                    ? couleur
-                                    : Colors.white.withValues(alpha: 0.95),
-
-                                borderRadius: BorderRadius.circular(22),
-
+                                color: couleur,
+                                borderRadius:
+                                    BorderRadius.circular(22),
                                 border: Border.all(
                                   color: Colors.white,
                                   width: 3,
                                 ),
-
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(
@@ -460,20 +460,14 @@ class _AlphabetState extends State<Alphabet> {
                               ),
 
                               child: Center(
-                                child: afficherCartes
-                                    ? Text(
-                                        choixLettre['nom1']!,
-                                        style: const TextStyle(
-                                          fontSize: 34,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Icons.help_rounded,
-                                        size: 35,
-                                        color: Color(0xFF9575CD),
-                                      ),
+                                child: Text(
+                                  choixLettre['nom1']!,
+                                  style: const TextStyle(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           );
@@ -486,7 +480,6 @@ class _AlphabetState extends State<Alphabet> {
                     // BOUTON RECOMMENCER
                     SizedBox(
                       width: double.infinity,
-
                       child: ElevatedButton.icon(
                         onPressed: nouveauJeu,
 
@@ -504,16 +497,17 @@ class _AlphabetState extends State<Alphabet> {
                         ),
 
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD166),
-                          foregroundColor: const Color(0xFF654900),
+                          backgroundColor:
+                              const Color(0xFFFFD166),
+                          foregroundColor:
+                              const Color(0xFF654900),
                           elevation: 5,
-
                           padding: const EdgeInsets.symmetric(
                             vertical: 14,
                           ),
-
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius:
+                                BorderRadius.circular(25),
                           ),
                         ),
                       ),

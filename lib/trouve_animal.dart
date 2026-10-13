@@ -613,7 +613,7 @@ class _TrouveAnimalState extends State<TrouveAnimal> {
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'Choisir_Animal.dart';
+import 'choisir_animal.dart';
 
 class TrouveAnimal extends StatefulWidget {
   const TrouveAnimal({super.key});
@@ -1004,7 +1004,7 @@ class _TrouveAnimalState extends State<TrouveAnimal> {
                                 child: Text(
                                   animal['emoji'],
                                   style: const TextStyle(
-                                    fontSize: 60,
+                                    fontSize: 30,
                                   ),
                                 ),
                               ),

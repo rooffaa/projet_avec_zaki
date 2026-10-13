@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'trouve_animal.dart';
 
@@ -191,7 +191,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF8ED8F8),
-
       appBar: AppBar(
         title: const Text(
           'لعبة الألوان 🌈',
@@ -205,7 +204,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
         backgroundColor: const Color(0xFF64B5F6),
         elevation: 0,
       ),
-
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
@@ -219,7 +217,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
             ],
           ),
         ),
-
         child: Stack(
           children: [
             // Décorations de fond
@@ -231,7 +228,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                 style: TextStyle(fontSize: 35),
               ),
             ),
-
             const Positioned(
               top: 100,
               right: 15,
@@ -240,7 +236,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                 style: TextStyle(fontSize: 50),
               ),
             ),
-
             const Positioned(
               bottom: 30,
               left: 15,
@@ -249,11 +244,9 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                 style: TextStyle(fontSize: 40),
               ),
             ),
-
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(18),
-
                 child: Column(
                   children: [
                     // SCORE ET NIVEAU
@@ -265,9 +258,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                           valeur: '$niveau',
                           couleur: const Color(0xFF9575CD),
                         ),
-
                         const SizedBox(width: 15),
-
                         carteInformation(
                           icon: Icons.star_rounded,
                           titre: 'النجوم',
@@ -297,16 +288,13 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                           ),
                         ],
                       ),
-
                       child: Column(
                         children: [
                           const Text(
                             '🎨',
                             style: TextStyle(fontSize: 45),
                           ),
-
                           const SizedBox(height: 8),
-
                           const Text(
                             'أنقر على هذا اللون',
                             textAlign: TextAlign.center,
@@ -316,9 +304,7 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                               color: Color(0xFF514477),
                             ),
                           ),
-
                           const SizedBox(height: 12),
-
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 25,
@@ -334,10 +320,11 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                               style: TextStyle(
                                 fontSize: 35,
                                 fontWeight: FontWeight.w900,
-                                color: couleurDemandee['couleur'] ==
-                                        Colors.yellow
-                                    ? const Color(0xFFB88600)
-                                    : couleurDemandee['couleur'],
+                                color:
+                                    couleurDemandee['couleur'] ==
+                                            Colors.yellow
+                                        ? const Color(0xFFB88600)
+                                        : couleurDemandee['couleur'],
                               ),
                             ),
                           ),
@@ -347,12 +334,11 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
 
                     const SizedBox(height: 25),
 
-                    // CHOIX DES COULEURS
+                    // CHOIX DES COULEURS SANS ÉTOILES
                     Expanded(
                       child: GridView.builder(
                         itemCount: choix.length,
                         physics: const NeverScrollableScrollPhysics(),
-
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
@@ -360,18 +346,14 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                           mainAxisSpacing: 20,
                           childAspectRatio: 1.75,
                         ),
-
                         itemBuilder: (context, index) {
                           final choixCouleur = choix[index];
-
-                          final Color couleur =
-                              choixCouleur['couleur'];
+                          final Color couleur = choixCouleur['couleur'];
 
                           return GestureDetector(
                             onTap: () {
                               verifierReponse(choixCouleur);
                             },
-
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               decoration: BoxDecoration(
@@ -391,16 +373,8 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                                   ),
                                 ],
                               ),
-
-                              child: Center(
-                                child: Icon(
-                                  Icons.star_rounded,
-                                  size: 48,
-                                  color: couleur == Colors.yellow
-                                      ? const Color(0xFFFFB300)
-                                      : Colors.white.withValues(alpha: 0.8),
-                                ),
-                              ),
+                              // Suppression de l'étoile dans le cadre
+                              child: const SizedBox.shrink(),
                             ),
                           );
                         },
@@ -421,15 +395,12 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                             reponseEnCours = false;
                           });
 
-                          ScaffoldMessenger.of(context)
-                              .hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
                         },
-
                         icon: const Icon(
                           Icons.refresh_rounded,
                           size: 27,
                         ),
-
                         label: const Text(
                           'اللعب من جديد',
                           style: TextStyle(
@@ -437,7 +408,6 @@ class _TrouveCouleurState extends State<TrouveCouleur> {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD166),
                           foregroundColor: const Color(0xFF654900),

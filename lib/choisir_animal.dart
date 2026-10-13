@@ -1118,7 +1118,7 @@ class _ChoisirAnimalState extends State<ChoisirAnimal> {
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'Alphabet.dart';
+import 'alphabet.dart';
 
 class ChoisirAnimal extends StatefulWidget {
   const ChoisirAnimal({super.key});
