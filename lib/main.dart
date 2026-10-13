@@ -1,10 +1,7 @@
-
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'music_service.dart';
-//import 'trouve_couleur.dart';
-import 'gauche_droite.dart';
+import 'trouve_couleur.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,8 +64,7 @@ class _EcranAccueilState extends State<EcranAccueil>
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          //builder: (context) => const TrouveCouleur(),
-          builder: (context) => const GaucheDroite(),
+          builder: (context) => const TrouveCouleur(),
         ),
       );
     });

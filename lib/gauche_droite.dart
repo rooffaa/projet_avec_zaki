@@ -1,10 +1,8 @@
 
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
-
 import 'merci_page.dart';
 
 class GaucheDroite extends StatefulWidget {

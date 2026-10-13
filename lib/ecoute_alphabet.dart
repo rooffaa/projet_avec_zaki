@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'dart:math';
-
 import 'fruits_lrgumes.dart';
 
 class AlphabetAudio extends StatefulWidget {
@@ -20,6 +19,30 @@ class _AlphabetAudioState extends State<AlphabetAudio> {
     {'nom': 'ب', 'nom1': 'ب'},
     {'nom': 'ت', 'nom1': 'ت'},
     {'nom': 'ث', 'nom1': 'ث'},
+    {'nom': 'ج', 'nom1': 'ج'},
+    {'nom': 'ح', 'nom1': 'ح'},
+    {'nom': 'خ', 'nom1': 'خ'},
+    {'nom': 'د', 'nom1': 'د'},
+    {'nom': 'ذ', 'nom1': 'ذ'},
+    {'nom': 'ر', 'nom1': 'ر'},
+    {'nom': 'ز', 'nom1': 'ز'},
+    {'nom': 'س', 'nom1': 'س'},
+    {'nom': 'ش', 'nom1': 'ش'},
+    {'nom': 'ص', 'nom1': 'ص'},
+    {'nom': 'ض', 'nom1': 'ض'},
+    {'nom': 'ط', 'nom1': 'ط'},
+    {'nom': 'ظ', 'nom1': 'ظ'},
+    {'nom': 'ع', 'nom1': 'ع'},
+    {'nom': 'غ', 'nom1': 'غ'},
+    {'nom': 'ف', 'nom1': 'ف'},
+    {'nom': 'ق', 'nom1': 'ق'},
+    {'nom': 'ك', 'nom1': 'ك'},
+    {'nom': 'ل', 'nom1': 'ل'},
+    {'nom': 'م', 'nom1': 'م'},
+    {'nom': 'ن', 'nom1': 'ن'},
+    {'nom': "ه", "nom1": "ه"},
+    {"nom": "و", "nom1": "و"},
+    {"nom": "ي", "nom1": "ي"},
   ];
 
   final List<Color> couleursCartes = [
@@ -95,7 +118,7 @@ class _AlphabetAudioState extends State<AlphabetAudio> {
         niveau++;
       });
 
-      if (score >= 10) {
+      if (score >= 15) {
         afficherMessage(
           'أحسنت! لقد أكملت اللعبة 🎉',
           const Color(0xFF43A047),
